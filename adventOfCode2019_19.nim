@@ -160,6 +160,8 @@ proc runProgram(aMachine: var Machine) =
         aMachine.status = error
         break
 
+var lP = (-1i64, -1i64)
+
 proc partOne =
   const
     lcMachine: Machine = (
@@ -180,6 +182,8 @@ proc partOne =
       runProgram(lMachine)
       if lMachine.output.len > 0:
         let lPixel = lMachine.output.pop
+        if lPixel == 1:
+          lP = (x, y)
         lCount += lPixel
 
   echo "partOne ", lCount
@@ -195,18 +199,36 @@ proc partTwo =
       @[]
     )
 
-  var x = 0i64
-  var y = 0i64
-  for y in 0i64..49:
-    for x in 0i64..49:
+  proc inBeam(p: (BiggestInt, BiggestInt)): BiggestInt =
+    if (p[0] >= 0) and (p[1] >= 0):
       var lMachine = lcMachine
-      lMachine.input.insert(@[x, y].reversed, 0)
+      lMachine.input.insert(@[p[0], p[1]].reversed, 0)
       runProgram(lMachine)
       if lMachine.output.len > 0:
-        let lPixel = lMachine.output.pop
+        result = lMachine.output.pop
+      else:
+        result = -1
+    else:
+      result = -1
 
-  echo "partTwo ", 2
+  proc nextRigthXInBean(p: (BiggestInt, BiggestInt)): (BiggestInt, BiggestInt) =
+    result = p
+    result[1].inc
+    while inBeam(result) == 1:
+      result[0] += 1
+    result[0] -= 1
+
+  var lResult = -1I64
+  var lCheck = lP
+  while inBeam(lP) == 1:
+    lCheck = nextRigthXInBean(lP)
+    if inBeam((lCheck[0] - 99, lCheck[1] + 99)) == 1:
+      lResult = (lCheck[0] - 99) * 10000 + lCheck[1]
+      break
+    lP = lCheck
+
+  echo "partTwo ", lResult
 
 
-partOne() # XXXX
-partTwo() # XXXX
+partOne() # 197
+partTwo() # 9181022
